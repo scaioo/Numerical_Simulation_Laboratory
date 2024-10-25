@@ -1,4 +1,4 @@
-# Nome del Progetto
+# Numerical Simulation Laboratory
 
 Una breve descrizione del tuo progetto.
 
