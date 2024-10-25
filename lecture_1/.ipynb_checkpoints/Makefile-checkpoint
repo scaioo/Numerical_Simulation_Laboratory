@@ -1,0 +1,9 @@
+CC = g++
+CFLAGS = -Wall -O3 --std=c++11
+name=ex_01.1
+$(name).exe : $(name).o
+	$(CC) $(name).o -o $(name).exe
+ex_2.01.o : $(name).cpp
+	$(CC) -c $(name).cpp -o $(name).o $(CFLAGS)
+clean :
+	rm *.o $(name).exe seed.out
