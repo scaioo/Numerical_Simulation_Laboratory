@@ -1,0 +1,7 @@
+# Ignora tutti i file eseguibili
+*.exe
+*.out
+*.bin
+
+# Ignora tutti i file .sh
+*.sh
