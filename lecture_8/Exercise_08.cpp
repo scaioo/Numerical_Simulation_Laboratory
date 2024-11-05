@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     int Nblock=1000; int Blocksize=500;
     ofstream _file_traj,_file_H,_file_psi;
     static ofstream null_stream;
-    string _string_traj="Results/traj.dat",_string_H="Results/H.dat",_string_psi="Results/psi.dat",filename="helper.dat",filename1="helper_1.dat",filename2="helper_2.dat";
+    string _string_traj="Results/traj.dat",_string_H="Results/H.dat",_string_psi="Results/psi.dat",filename="Results/helper.dat",filename1="Results/helper_1.dat",filename2="Results/helper_2.dat";
     bool m_save_traj=true,m_save_H=true,m_save_psi=true,m_gaussian=true;
     psi_8 psi(1.,1.);
     Hpsi hpsi(1.,1.);
