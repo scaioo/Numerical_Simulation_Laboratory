@@ -1,7 +1,6 @@
-# Ignore all nobook checkpoints
-.ipynb_checkpoints
 # Ignore all files .sh
 *.sh
+lecture_5/Results/.ipynb_checkpoints/
 # Ignore results lecture 5
 lecture_5/Results/RW_excited_*.dat
 lecture_5/Results/RW_ground_*.dat
