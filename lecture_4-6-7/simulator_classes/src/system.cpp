@@ -67,12 +67,14 @@ double System :: Force(int i, int dim){
 void System :: move(int i){ // Propose a MC move for particle i
   if(_sim_type == 3){ //Gibbs sampler for Ising
     // TO BE FIXED IN EXERCISE 6
-    double cond_prob=1./(1.+exp(-2.*_beta*(_J*(_particle(this->pbc(i-1)).getspin()+_particle(this->pbc(i+1)).getspin()))+_H));
+    double delta_E =  2. * (_J * (double(_particle(this->pbc(i - 1)).getspin()) + double(_particle(this->pbc(i + 1)).getspin())) + _H);
+    double cond_prob = 1.0 / (1.0 + exp(-_beta*delta_E));
 	  if(_rnd.Rannyu() <= cond_prob){
-      _particle(i).setspin(+1);
+      _particle(i).setspin(1);
     }else{
-		  _particle(i).setspin(-1);}
-  	  _naccepted++;
+		  _particle(i).setspin(-1);
+      }
+  	_naccepted++;
   }else{            // M(RT)^2
     if(_sim_type == 1){       // LJ system
       vec shift(_ndim);       // Will store the proposed translation
@@ -196,7 +198,7 @@ void System :: initialize(){ // Initialize the System object according to the co
       _halfside=0.5*_side;
       coutf << "SIDE= ";
       for(int i=0; i<_ndim; i++){
-        coutf << setw(12) << _side[i];
+        coutf << setw(16) << _side[i];
       }
       coutf << endl;
     } else if( property == "R_CUT" ){
@@ -629,10 +631,10 @@ void System :: averages(int blk){
     average  = _average(_index_penergy);
     sum_average = _global_av(_index_penergy);
     sum_ave2 = _global_av2(_index_penergy);
-    coutf << setw(12) << blk 
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk 
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // KINETIC ENERGY ////////////////////////////////////////////////////////////
@@ -641,10 +643,10 @@ void System :: averages(int blk){
     average  = _average(_index_kenergy);
     sum_average = _global_av(_index_kenergy);
     sum_ave2 = _global_av2(_index_kenergy);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // TOTAL ENERGY //////////////////////////////////////////////////////////////
@@ -653,10 +655,10 @@ void System :: averages(int blk){
     average  = _average(_index_tenergy);
     sum_average = _global_av(_index_tenergy);
     sum_ave2 = _global_av2(_index_tenergy);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // TEMPERATURE ///////////////////////////////////////////////////////////////
@@ -665,10 +667,10 @@ void System :: averages(int blk){
     average  = _average(_index_temp);
     sum_average = _global_av(_index_temp);
     sum_ave2 = _global_av2(_index_temp);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // PRESSURE //////////////////////////////////////////////////////////////////
@@ -678,10 +680,10 @@ void System :: averages(int blk){
     average  = _average(_index_pressure);
     sum_average = _global_av(_index_pressure);
     sum_ave2 = _global_av2(_index_pressure);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // GOFR //////////////////////////////////////////////////////////////////////
@@ -692,9 +694,9 @@ void System :: averages(int blk){
       average  = _average(_index_gofr+i);
       sum_average = _global_av(_index_gofr+i);
       sum_ave2 = _global_av2(_index_gofr+i);
-      coutf << setw(12) << i*_bin_size
-            << setw(12) << sum_average/double(_block_counter)
-            << setw(12) << this->error(sum_average, sum_ave2, _block_counter) << endl;
+      coutf << setw(16) << i*_bin_size
+            << setw(16) << sum_average/double(_block_counter)
+            << setw(16) << this->error(sum_average, sum_ave2, _block_counter) << endl;
     }
     coutf.close();
     _block_counter++;
@@ -706,9 +708,9 @@ void System :: averages(int blk){
         app += pow(_average(_index_gofr+i),2);
         sum_average = _global_av(_index_gofr+i);
         sum_ave2 = _global_av2(_index_gofr+i);
-        coutf << setw(12) << i*_bin_size
-              << setw(12) << average/double(_n_bins)
-              << setw(12) << this->error(sum_average, app, _n_bins) << endl;
+        coutf << setw(16) << i*_bin_size
+              << setw(16) << average/double(_n_bins)
+              << setw(16) << this->error(sum_average, app, _n_bins) << endl;
       }
       coutf.close();
     }
@@ -720,10 +722,10 @@ void System :: averages(int blk){
     average  = _average(_index_magnet);
     sum_average = _global_av(_index_magnet);
     sum_ave2 = _global_av2(_index_magnet);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // SPECIFIC HEAT /////////////////////////////////////////////////////////////
@@ -733,10 +735,10 @@ void System :: averages(int blk){
     average  = _average(_index_cv);
     sum_average = _global_av(_index_cv);
     sum_ave2 = _global_av2(_index_cv);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // SUSCEPTIBILITY ////////////////////////////////////////////////////////////
@@ -746,10 +748,10 @@ void System :: averages(int blk){
     average  = _average(_index_chi);
     sum_average = _global_av(_index_chi);
     sum_ave2 = _global_av2(_index_chi);
-    coutf << setw(12) << blk
-          << setw(12) << average
-          << setw(12) << sum_average/double(blk)
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk
+          << setw(16) << average
+          << setw(16) << sum_average/double(blk)
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // ACCEPTANCE ////////////////////////////////////////////////////////////////
@@ -757,7 +759,7 @@ void System :: averages(int blk){
   coutf.open("../OUTPUT/acceptance.dat",ios::app);
   if(_nattempts > 0) fraction = double(_naccepted)/double(_nattempts);
   else fraction = 0.0; 
-  coutf << setw(12) << blk << setw(12) << fraction << endl;
+  coutf << setw(16) << blk << setw(16) << fraction << endl;
   coutf.close();
   
   return;
@@ -868,7 +870,7 @@ void System :: initialize(string input_path,string output_path){ // Initialize t
       _halfside=0.5*_side;
       coutf << "SIDE= ";
       for(int i=0; i<_ndim; i++){
-        coutf << setw(12) << _side[i];
+        coutf << setw(16) << _side[i];
       }
       coutf << endl;
     } else if( property == "R_CUT" ){
@@ -960,7 +962,7 @@ void System :: initialize(string input_path,string output_path,string config_pat
       _halfside=0.5*_side;
       coutf << "SIDE= ";
       for(int i=0; i<_ndim; i++){
-        coutf << setw(12) << _side[i];
+        coutf << setw(16) << _side[i];
       }
       coutf << endl;
     } else if( property == "R_CUT" ){
@@ -1300,10 +1302,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_penergy);
     sum_average = _global_av(_index_penergy);
     sum_ave2 = _global_av2(_index_penergy);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // KINETIC ENERGY ////////////////////////////////////////////////////////////
@@ -1312,10 +1314,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_kenergy);
     sum_average = _global_av(_index_kenergy);
     sum_ave2 = _global_av2(_index_kenergy);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // TOTAL ENERGY //////////////////////////////////////////////////////////////
@@ -1324,10 +1326,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_tenergy);
     sum_average = _global_av(_index_tenergy);
     sum_ave2 = _global_av2(_index_tenergy);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // TEMPERATURE ///////////////////////////////////////////////////////////////
@@ -1336,10 +1338,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_temp);
     sum_average = _global_av(_index_temp);
     sum_ave2 = _global_av2(_index_temp);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // PRESSURE //////////////////////////////////////////////////////////////////
@@ -1363,9 +1365,9 @@ void System :: averages(string output_path,int blk){
     for(int i=0; i<_n_bins; i++){
       app  += _average(_index_gofr+i);
       app2 += pow(_average(_index_gofr+i),2);
-      coutf << setw(12) << blk << "\t"
-            << setw(12) << app/double(blk) << "\t"
-            << setw(12) << this->error(app, app2, _n_bins) << endl;
+      coutf << setw(16) << blk << "\t"
+            << setw(16) << app/double(blk) << "\t"
+            << setw(16) << this->error(app, app2, _n_bins) << endl;
     }
     coutf.close();
     _block_counter++;
@@ -1375,9 +1377,9 @@ void System :: averages(string output_path,int blk){
         average  = _average(_index_gofr+i);
         sum_average = _global_av(_index_gofr+i);
         sum_ave2 = _global_av2(_index_gofr+i);
-        coutf << setw(12) << i*_bin_size << "\t"
-              << setw(12) << sum_average/double(blk) << "\t"
-              << setw(12) << this->error(sum_average,sum_ave2 , blk) << endl;
+        coutf << setw(16) << i*_bin_size << "\t"
+              << setw(16) << sum_average/double(blk) << "\t"
+              << setw(16) << this->error(sum_average,sum_ave2 , blk) << endl;
       }
       coutf.close();
     }
@@ -1389,10 +1391,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_magnet);
     sum_average = _global_av(_index_magnet);
     sum_ave2 = _global_av2(_index_magnet);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // SPECIFIC HEAT /////////////////////////////////////////////////////////////
@@ -1402,10 +1404,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_cv);
     sum_average = _global_av(_index_cv);
     sum_ave2 = _global_av2(_index_cv);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // SUSCEPTIBILITY ////////////////////////////////////////////////////////////
@@ -1415,10 +1417,10 @@ void System :: averages(string output_path,int blk){
     average  = _average(_index_chi);
     sum_average = _global_av(_index_chi);
     sum_ave2 = _global_av2(_index_chi);
-    coutf << setw(12) << blk << "\t"
-          << setw(12) << average << "\t"
-          << setw(12) << sum_average/double(blk) << "\t"
-          << setw(12) << this->error(sum_average, sum_ave2, blk) << endl;
+    coutf << setw(16) << blk << "\t"
+          << setw(16) << average << "\t"
+          << setw(16) << sum_average/double(blk) << "\t"
+          << setw(16) << this->error(sum_average, sum_ave2, blk) << endl;
     coutf.close();
   }
   // ACCEPTANCE ////////////////////////////////////////////////////////////////
@@ -1426,7 +1428,7 @@ void System :: averages(string output_path,int blk){
   coutf.open(output_path+"OUTPUT/acceptance.dat",ios::app);
   if(_nattempts > 0) fraction = double(_naccepted)/double(_nattempts);
   else fraction = 0.0; 
-  coutf << setw(12) << blk << "\t" << setw(12) << fraction << endl;
+  coutf << setw(16) << blk << "\t" << setw(16) << fraction << endl;
   coutf.close();
   
   return;

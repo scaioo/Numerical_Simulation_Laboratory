@@ -13,6 +13,7 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 #include <cmath>
 #include <cstdlib>
 #include <utility>
+#include <armadillo>
 #include "../inc/random.h"
 
 using namespace std;
@@ -44,12 +45,19 @@ void Random :: SaveSeed(string path){
   WriteSeed.close();
   return;
 }
-pair<double,double> Random::spherical(Random &rnd){
+/*pair<double,double> Random::spherical(Random &rnd){
    double x=rnd.Rannyu(0,1);
    double theta=acos(-2*x+1);
    double phi=rnd.Rannyu(0,2*M_PI);
    return make_pair(theta,phi);
+}*/
+arma::vec Random::spherical(){
+   // This function generates a random point on the unit sphere
+   double theta=acos(1-2*Rannyu());
+   double phi=2*M_PI*Rannyu();
+   return {theta,phi};
 }
+
 double Random :: Gauss(double mean, double sigma) {
    // This function generates a random number from a Gaussian distribution with given mean and sigma
    double s=Rannyu();

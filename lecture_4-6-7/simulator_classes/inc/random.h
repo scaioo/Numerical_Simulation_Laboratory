@@ -7,7 +7,7 @@
 _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 *****************************************************************
 *****************************************************************/
-
+#include <armadillo>
 #ifndef __Random__
 #define __Random__
 
@@ -41,7 +41,8 @@ public:
   // Method to generate a random number with a Cauchy-Lorentz distribution
   double CauchyLorentz(double mean, double gamma);
   // Method to generate a random number with a spherical distribution
-  std::pair<double,double> spherical(Random &rnd);
+  //std::pair<double,double> spherical(Random &rnd);
+  arma::vec spherical();
   // Method to start generating random number
   void start();
 };

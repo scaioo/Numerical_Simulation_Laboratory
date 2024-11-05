@@ -21,7 +21,7 @@ int main(int argc, char *argv[]){
     temp_string = StringVec(0.1, 3.0, 0.01);
     // Set the restart parameter to 0
     change_file("input_06.1/INPUT/input.dat","RESTART","0");
-    change_file("input_06.1/INPUT/input.dat","NBLOCKS","100");
+    change_file("input_06.1/INPUT/input.dat","NBLOCKS","200");
     change_file("input_06.1/INPUT/input.dat","NSTEPS","1000");
     cout << "equilibration phase" << endl;
     // cycle over the magnetic field (on/off)
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
     cout << "Start Measure" << endl;
     // Set the restart parameter to 1
     change_file("input_06.1/INPUT/input.dat","RESTART","1");
-    change_file("input_06.1/INPUT/input.dat","NBLOCKS","100");
+    change_file("input_06.1/INPUT/input.dat","NBLOCKS","500");
     change_file("input_06.1/INPUT/input.dat","NSTEPS","10000");
     // cycle over the magnetic field (on/off)
     for(int i=0; i<2; i++){
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]){
         vector<double> suscept = getMeasure(filepath+"measure/"+met_gibb[k]+"/"+field[i]+"/temp_"+str+"/OUTPUT/susceptibility.dat");
         vector<double> tener = getMeasure(filepath+"measure/"+met_gibb[k]+"/"+field[i]+"/temp_"+str+"/OUTPUT/total_energy.dat");
         // Write the data in the file 
-        ofile << str << ";\t" << mag[0] << ";\t" << mag[1] << ";\t" << spec_heat[0] << ";\t" << spec_heat[1] << ";\t" << suscept[0] << ";\t" << suscept[1] << ";\t" << tener[0] << ";\t" << tener[1] << endl;
+        ofile << setw(16) << str << ";\t" << mag[0] << ";\t" << mag[1] << ";\t" << spec_heat[0] << ";\t" << spec_heat[1] << ";\t" << suscept[0] << ";\t" << suscept[1] << ";\t" << tener[0] << ";\t" << tener[1] << endl;
     }
     }
     }
