@@ -19,16 +19,16 @@ All: Exercise_02.1 Exercise_02.2
 Exercise_02.1: $(OBJS) $(OBJ_DIR)/Exercise_02.1.o $(RND_DIR)/random.o $(FUNC)/functions.o
 	$(CC) $(CFLAGS) -o $@ $^ $(AFLAGS)
 
-# Regola per la compilazione delle functions
+# Rule for the creation of the function object file
 $(FUNC)/functions.o: $(FUNC)/functions.cpp $(FUNC)/functions.hpp
 	$(CC) $(CFLAGS) -c -o $@ $<
-# Regola per la compilazione della classe random
+# Rule for the creation of the random object file
 $(RND_DIR)/random.o: $(RND_DIR)/random.cpp $(RND_DIR)/random.h
 	$(CC) $(CFLAGS) -c -o $@ $<
-# Regola per la compilazione del file oggetto
+# Rule for the creation of the Exercise object files
 $(OBJ_DIR)/Exercise_02.1.o : Exercise_02.1.cpp
 	$(CC) -c Exercise_02.1.cpp -o $(OBJ_DIR)/Exercise_02.1.o $(CFLAGS)
-# Regola generica per compilare i file oggetto
+# General rule for the creation of object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -39,10 +39,10 @@ Exercise1_exe: Exercise_02.1
 Exercise_02.2: $(OBJS) $(OBJ_DIR)/Exercise_02.2.o $(RND_DIR)/random.o $(FUNC)/functions.o -larmadillo
 	$(CC) $(CFLAGS) -o $@ $^ 
 
-# Regola per la compilazione del file oggetto
+# Rule for the creation of the Exercise object file
 $(OBJ_DIR)/Exercise_02.2.o : Exercise_02.2.cpp
 	$(CC) -c Exercise_02.2.cpp -o $(OBJ_DIR)/Exercise_02.2.o $(CFLAGS)
-# Regola generica per compilare i file oggetto
+# General rule for the creation of object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
