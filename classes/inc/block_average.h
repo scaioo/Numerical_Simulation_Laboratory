@@ -105,12 +105,16 @@ class put_price : public BlockMeanCalculator {
     double calculate(double value,Random &rnd) const override;
     //method to equilibrate the system
     void Equilibrate(int Nstep,Random &rnd);
+    //method to set m_r
+    void Set_r(vec &r){m_r=r;m_rnew=r;};
     //method to set Nstep
     void Set_Nstep(int step);
     //method to get Nstep
     double Get_Nstep();
     //method to get a
     double Get_a();
+    //method to get r
+    arma::vec Get_r(){return m_r;};
     //method to set a
     void Set_a(int Nstep,double x_start ,double initial_increment,double target_ratio,double tolerance,Random &rnd,int dimension);
     // method to set the string
@@ -136,34 +140,3 @@ class put_price : public BlockMeanCalculator {
     Function &m_g; // Observable to measure
 };
 #endif // __metropolis__
-/*
-#ifndef __Simulated_Annealing__
-#define __Simulated_Annealing__
-class Simulated_Annealing : public Metropolis {
-    public:
-    //constructor
-    Simulated_Annealing(Function &f,vec &r_start,ofstream &file_traj,ofstream &file_H,ofstream &file_psi,Function &g): 
-        m_f(f),m_g(g),m_r(r_start), _file_traj(file_traj),_file_H(file_H),_file_psi(file_psi), m_save_traj(true), m_save_H(true), m_save_psi(true), m_gaussian(true) {};
-    //method to calculate simulated annealing
-    double calculate(double value,Random &rnd) const override;
-    void calc(double beta,Random &rnd) const;
-    //destructor
-    ~Simulated_Annealing();
-    // functions to set and get values:
-    void set_gaussian(bool gaussian){m_gaussian=gaussian;}
-
-    private:
-    double _beta=0.;
-    bool m_save_traj,m_save_H,m_save_psi;
-    vec &m_r;
-    ofstream &_file_traj, &_file_H, &_file_psi;
-    string _string_traj, _string_H, _string_psi;
-    Function &m_f; Function &m_g; 
-    bool m_gaussian;
-    // Null stream to handle default file operations when no file is provided
-    static ofstream null_stream;
-
-};
-
-#endif // __Simulated_Annealing__
-*/

@@ -4,165 +4,143 @@
 #include <map>
 #include <unordered_map>
 #include"../../random_number/random.h"
-#include"../../funzioni/functions.hpp"
+#include"../../functions/functions.hpp"
 #include <utility>
 #include <cmath>
 using namespace std;
 using namespace arma;
 
-void fillVector( ivec& son, const ivec& parent) {
-    std::unordered_set<double> existingValues(son.begin(), son.end());
-    size_t fillIndex = 1;
-    for (size_t i=0;i < parent.size();i++) {
-        int value = parent[i];
-        if (existingValues.find(value) == existingValues.end()) {
-            while (fillIndex < son.size() && son[fillIndex] != 0) {
-                fillIndex++;
-            }
-            if (fillIndex < son.size()) {
-                son[fillIndex] = value;
-                existingValues.insert(value);
-            }
-        }
-    }
-}
-
-#ifndef GENE_H
-#define GENE_H
-
-class gene {
-public:
-    
-    // Default constructor
-    gene(int n_genes) : _n_genes(n_genes),_x(0), _y(0), _rnd(nullptr) {generateMap();}
-    
-    void generateMap(){
-        for(size_t i=0;i<_n_genes;i++){
-            arma::vec vec={0,0};
-            gene_map[i]=vec;
-        }
-    }
-    // Constructor that initializes based on a radius
-    void initialize_circle(int index, double r, Random &rnd){ 
-        *_rnd = rnd;
-        arma:: vec pos_gene;
-        for(size_t i=0;i<_n_genes;i++){
-            _x = _rnd->Rannyu(-r, r);
-            double app = _rnd->Rannyu();
-            int sign = (app < 0.5) ? -1 : 1;
-            _y = sign * sqrt(r * r - _x * _x);
-            gene_map[i]={_x,_y}
-        }
-        return vec{_x, _y};
-    }
-    // Constructor that initializes based on a square
-    vec initialize_square(int index, double l, Random &rnd) {
-        *_rnd = rnd;
-        _x = _rnd->Rannyu(-l, l);
-        _y = _rnd->Rannyu(-l, l);
-        return vec{_x, _y};
-    }
-    // Destructor
-    ~gene() {}
-
-private:
-    double _x, _y;
-    Random *_rnd;  // Store a pointer to the Random object
-    std::map<int, arma::ivec> gene_map;  // Map with int key and position
-    int _n_genes;  // Number of genes
-};
-
-#endif // GENE_H
-
 #ifndef INDIVIDUE_H
 #define INDIVIDUE_H
 
-class Individue : gene{
+class Individue{
 public:
+    // ----------------------------------------------------- //
+    //                  CONSTRUCTORS                         //
+    // ----------------------------------------------------- //
     // Default constructor
-    Individue() : gene(),_dim(0), _rnd(nullptr),_idxs({0,0}) {}
-    // initialization of individue on a circle
-    void set_map() {
-        for(size_t i = 0; i < _dim; ++i) {
-            gene new_gene;
-            _indi.insert_or_assign(i, new_gene.initialize_circle(i, 1., *_rnd));
-            _idxs(i)=i;
+    Individue() : _dim(0), _rnd(nullptr) {}
+    // Constructor
+    Individue(int dim,Random rnd) : _dim(dim) {
+        ivec indi(dim,arma::fill::zeros);
+        _indi=indi;
+        for(size_t i=0;i<_dim;i++){
+            _indi(i)=i;
         }
     }
-    void initialize_circle(int dim,double r,Random &rnd) {
-        _dim=dim;
+    // Copy constructor
+    Individue& operator=(const Individue& other) {
+        _dim = other._dim;
+        _rnd = other._rnd;
+        _indi=other._indi;
+        _indi_map=other._indi_map;
+        return *this;
+        }
+    
+    //-------------------------------------------------------//
+    //              INITIALIZATION METHODS                   //                    
+    //-------------------------------------------------------//
+    // initialization of individue on a circle
+    void initialize_circle(int dim_indi,double r,Random &rnd) {
         _rnd = &rnd;
+        _dim=dim_indi;
+        _indi.set_size(_dim);
+        for(size_t i=0;i<_dim;i++){_indi(i)=i;}
+        double x, y,app;
+        int sign;
         for(size_t i = 0; i < _dim; ++i) {
-            gene new_gene;
-            _indi[i] = new_gene.initialize_circle(i, r, *_rnd);
-            cerr << _indi[i][0] << " " << _indi[i][1] << endl;
-            _idxs(i)=i;
+            x=_rnd->Rannyu(-r, r);
+            double app = _rnd->Rannyu();
+            sign = (app < 0.5) ? -1 : 1;
+            y = sign * sqrt(r * r - x * x);
+            _indi_map[i]={x,y};
         }
     }
     // initialization in a square
-    void initialize_square(int dim,double x,Random &rnd) {
-        _dim=dim;
+    void initialize_square(int dim_indi,double x,Random &rnd) {
         _rnd = &rnd;
+        _dim=dim_indi;
+        _indi.set_size(_dim);
+        for(size_t i=0;i<_dim;i++){_indi(i)=i;}
         for(size_t i = 0; i < _dim; ++i) {
-            gene new_gene;
-            _indi[i]=new_gene.initialize_square(i, x, *_rnd);
-            cerr << _indi[i][0] << " " << _indi[i][1] << endl;
-            _idxs(i)=i;
-    
+            _indi_map[i]={_rnd->Rannyu(-x, x),_rnd->Rannyu(-x, x)};
         }
     }
-
-    Individue& operator=(const Individue& other) {
-            if (this != &other) {
-                _dim = other._dim;
-                _rnd = other._rnd;
-                _idxs=other._idxs;
-                for(size_t i = 0; i < _dim; ++i) {
-                    _indi.insert_or_assign(i, other._indi.at(i));
-            }
-            }
-            return *this;
-    
+    // initialization of individue given the coordinates
+    void initialize_city(int dim_indi,arma::mat coordinates,Random &rnd) {
+        _rnd = &rnd;
+        _dim=dim_indi;
+        _indi.set_size(_dim);
+        for(size_t i=0;i<_dim;i++){_indi(i)=i;}
+        for(size_t i = 0; i < _dim; ++i) {
+            _indi_map[i]={coordinates(i,0),coordinates(i,1)};
         }
-
+    }
+    
+    // ----------------------------------------------------- //
+    //                  GET METHODS                          //
+    // ----------------------------------------------------- //
+    // Get the positions of the individue
     mat Get_positions() const{
         mat positions(2,_dim);
         for(size_t i=0;i<_dim;i++){
-            cerr << _indi.at(_idxs(i))[0] << " " << _indi.at(_idxs(i))[1] << endl;
-            positions(0,i)=_indi.at(_idxs(i))[0];
-            positions(1,i)=_indi.at(_idxs(i))[1];
+            positions(0,i)=_indi_map.at(_indi(i))[0];
+            positions(1,i)=_indi_map.at(_indi(i))[1];
         }
         return positions;
     }
-
+    // Get the loss of the individue
     double get_indi_Loss() const {
         double loss = 0;
         for(size_t i=0;i<_dim-1;i++){
-            loss+=arma::norm(_indi.at(_idxs(i)) - _indi.at(_idxs(i+1)),2);
+            loss+=arma::norm(_indi_map.at(_indi(i)) - _indi_map.at(_indi(i+1)),2);
         }
-        loss+=arma::norm(_indi.at(_idxs(_dim-1)) - _indi.at(_idxs(0)),2);
+        loss+=arma::norm(_indi_map.at(_indi(_dim-1)) - _indi_map.at(_indi(0)),2);
         return loss;
     }
+    // Get an index of the individue
+    int get_idxs(int i) const {return _indi(i);}
+    // Get the indexes of the individue
+    ivec get_idxs() const {return _indi;}
 
-    ivec get_idxs() const {return _idxs;}
-
+    // ----------------------------------------------------- //
+    //                 OTHER METHODS                         //
+    // ----------------------------------------------------- //
+    // shuffle the indexes of the individue
     ivec shuffleidxs() {
-        return arma::shuffle(_idxs);
-    }
-
+        ivec r_new = _indi.subvec(1, _indi.n_elem - 1);
+        r_new = arma::shuffle(r_new);
+        r_new.insert_rows(0,1);
+        r_new(0)=_indi(0);
+        _indi=r_new;
+        return _indi;}
+    // Set the indexes of the individue
     void set_idxs(ivec idxs) {
-        _idxs = idxs;
+        if(idxs.n_elem != _dim) {
+            cerr << "Error in set_idxs: invalid size of the indexes vector." << endl;
+            exit(-1);
+        }
+        _indi = idxs;
     }
 
+    void set_idxs(int index,int value) {
+        if(index>_dim or index < 0){
+            cerr << "Error in set_idxs: index bigger than dim indi or smaller than zero" << endl;
+            exit(-1);
+        }
+        _indi(index)=value;
+
+    }
+    // Print the positions of the individue
     void print_positions() const {
         for (size_t i = 0; i < _dim; ++i) {
-            cout << "Index: " << _idxs(i) << ", Position: (" << _indi[i][0] << ", " << _indi[i][1] << ")" << std::endl;
+            cout << "Index: " << _indi[i] << ", Position: (" << _indi_map.at(i)[0] << ", " << _indi_map.at(i)[1] << ")" << "\t";
         }
     }
-    
+    // Print the indexes of the individue
     void print_idxs() const{
         cout << "Indexes: [";
-        for(size_t i=0;i<_dim;i++){cout << _idxs(i)<<" ";}
+        for(size_t i=0;i<_dim;i++){cout << _indi(i)<<" ";}
         cout << "]";
     }
     
@@ -170,27 +148,23 @@ public:
     bool checkIndividual() {
         std::unordered_set<int> existingIndices;
         for (size_t i = 0; i < _dim; ++i) {
-            if (existingIndices.find(_idxs(i)) != existingIndices.end()) {
+            if (existingIndices.find(_indi(i)) != existingIndices.end()) {
             cerr << "Error in checkIndividual: duplicate index found" << endl; exit(-1);
             }
-            if(_idxs(0)!=0){cerr << "Error in checkIndividual: first index is not 0" << endl; exit(-1);}
+            if(_indi(0)!=0){cerr << "Error in checkIndividual: first index is not 0" << endl; exit(-1);}
         }
         return true;
     }
-    
-    // Destructor
-    ~Individue() {}
 
     // ----------------------------------------------------- //
     //                  MUTATION METHODS                     //
     // ----------------------------------------------------- //
-
+    // Pair permutation two indexes
     void pair_permutation(int i, int j){
         
-        ivec r=_idxs;
+        ivec r=_indi;
 
-        //if(i==j){cerr << "Error in pair permutation : indexes are the same" << endl; exit(-1);}
-        if(i>=_dim-1 || j>=_dim-1 || i==0 || i==0 ){cerr << "Error in pair permutation : indexes out of range" << endl; exit(-1);}
+        if(i>=_dim-1 || j>=_dim-1){cerr << "Error in pair permutation : indexes out of range" << endl; exit(-1);}
         // copy the vector without the first element that remains fixed
         ivec r_new = r.subvec(1, r.n_elem - 1);
         ivec r_app=r_new;
@@ -201,15 +175,15 @@ public:
 
         r_new.insert_rows(0,1);
         r_new(0)=r(0);
-        _idxs=r;
+        _indi=r_new;
     } 
-
+    // Block shift of the indexes
     void block_shift(int k, int m, int n){
 
         // ------------------------- PARAMETERS ----------------------------
         // k start of the block, m length of the block, n length of the jump
         // -----------------------------------------------------------------
-        ivec r=_idxs;
+        ivec r=_indi;
         
         // check if the block length is greater than the vector size
         if(m+n>r.size()-1){cerr << "Error in Block Shift function : block length and jump big: m="<< m << " n= "<< n << endl; exit(-1);}
@@ -228,16 +202,16 @@ public:
         r_new.insert_rows(0,1);
         r_new(0)=r(0);
         
-        _idxs=r;
+        _indi=r_new;
 }
-
+    // Block permutation of the indexes
     void block_permutation(int m, int k, int n){
         
         // ------------------------- PARAMETERS ----------------------------
         // m length of the block, k start of the block1, n start of the block2
         // -----------------------------------------------------------------
     
-        ivec r=_idxs;
+        ivec r=_indi;
 
         if(((r.size())/2)<(m+1)){cerr << "Error in block permutation : block length or start index too big " << endl; exit(-1);}
         if(fabs(n-k)<(m+1)){cerr << "Error in block permutation : block length or start index too big " << endl; exit(-1);}
@@ -258,11 +232,11 @@ public:
         // add the first element
         r_new.insert_rows(0,1);
         r_new(0)=r(0);
-        _idxs=r;
+        _indi=r_new;
     }
-
+    // Inversion of a block of the indexes
     void inversion(size_t startIdx, size_t endIdx) {
-        ivec r=_idxs;
+        ivec r=_indi;
         for(size_t i=0;i<_dim;i++){r(i)=i;}
 
         // Ensure the parameters are within valid ranges
@@ -282,25 +256,33 @@ public:
         // add the first element
         r_new.insert_rows(0,1);
         r_new(0)=r(0);
-        _idxs=r;
+        _indi=r_new;
     }
 
+    // Destructor
+    ~Individue() {}
+    
 private:
-    map<int,arma::vec> _indi;
-    ivec _idxs;
+    map<int,arma::vec> _indi_map;
+    ivec _indi;
     int _dim; 
     Random *_rnd;
 };
 
 #endif // INDIVIDUE_H
 
+
 #ifndef POPULATION_H
 #define POPULATION_H
 
 class Population : Individue {
 public:
-    Population() : Individue(), _dim_indi(0),_dim_pop(0),_rnd(nullptr) {}
-
+    // Constructor
+    Population(Random rnd) : Individue(), _dim_indi(0),_dim_pop(0),_rnd(&rnd) {}
+    
+    // ----------------------------------------------------- //
+    //              INITIALIZATION METHODS                   //
+    // ----------------------------------------------------- //
     // Initialization of the population on a circle
     void initialize_circle(int dim_indi, int dim_pop, double r,Random &rnd) {
         _dim_indi=dim_indi;
@@ -308,7 +290,7 @@ public:
         _rnd = &rnd;
         pop.set_size(_dim_pop);
         //first individue
-        pop[0].initialize_circle(_dim_indi, r,*_rnd);
+        pop[0].initialize_circle(dim_indi,r,*_rnd);
         pop[0].shuffleidxs();
         for(size_t i = 1; i < _dim_pop; ++i) {
             pop[i] = pop[0];
@@ -321,14 +303,26 @@ public:
         _dim_pop=dim_pop;
         _rnd=&rnd;
         pop.set_size(_dim_pop);
-        pop[0].initialize_square(_dim_indi, l,*_rnd);
+        pop[0].initialize_square(dim_indi,l,*_rnd);
+        for(size_t i = 0; i < _dim_pop; ++i) {
+            pop[i] = pop[0];
+            pop[i].shuffleidxs();
+        }
+    }
+    // Initialization of the population given the coordinates
+    void initialize_city(int dim_indi, int dim_pop, arma::mat &coordinates,Random &rnd) {
+        _dim_indi=dim_indi;
+        _dim_pop=dim_pop;
+        _rnd=&rnd;
+        pop.set_size(_dim_pop);
+        pop[0].initialize_city(dim_indi,coordinates,*_rnd);
         for(size_t i = 0; i < _dim_pop; ++i) {
             pop[i] = pop[0];
             pop[i].shuffleidxs();
         }
     }
     
-    // Operators
+    // Operator []
     Individue& operator[](size_t index) {
         if (index >= pop.n_elem) {
             throw std::out_of_range("Index out of range");
@@ -336,7 +330,11 @@ public:
         return pop[index];
     }
     
-    // Get methods
+    //-------------------------------------------------------//
+    //                   GET METHODS                         //
+    //-------------------------------------------------------//
+
+    // Get the mean loss of the population
     double get_pop_mean_Loss(){
         // Sort the population based on the loss
         std::vector<std::pair<double, size_t>> loss_indices;
@@ -351,52 +349,46 @@ public:
         }
         return loss/half_pop;
     }
-    
+    // Get the size of the population
     int get_pop_size() const { return _dim_pop;}
-    
+    // Get the size of the individue
     int get_indi_size() const { return _dim_indi;}       
 
-    // Print methods
-    void print() const {
+    //-------------------------------------------------------//
+    //                   PRINT METHODS                       //
+    //-------------------------------------------------------//
+    // Print the positions of the population
+    void print_pop_positions() const {
         for (size_t i = 0; i < pop.n_rows; ++i) {
             cout << "Individue " << i << ":" << endl;
             pop[i].print_positions();
             cout << endl;
         }
     }
-    
-    void printIdxs() const {
-        for (size_t i = 0; i < pop.n_rows; ++i) {
-            cout << "Individue " << i << ": ";
-            pop(i, 0).print_idxs();
-            cout << endl;
-        }
-    }
-     
-    void print_population() {
+    // Print the indexes of the population
+    void print_pop_idxs() {
         for (size_t i = 0; i < _dim_pop; ++i) {
             cout << "Individue " << i << ": ";
             pop[i].print_idxs();
             cout << endl;
         }
     }
-
     // Print the losses of the population
     void print_pop_loss(){
         for (size_t i = 0; i < pop.n_elem; ++i) {
-            cout << "Individue " << i << " loss: " << pop(i, 0).get_indi_Loss() << endl;
+            cout << "Individue " << i << " loss: " << pop[i].get_indi_Loss() << endl;
         }
     }
-
-    /*void print_full_population(ofstream &file) {
+    // Print the full population
+    void print_full_population() {
         for (size_t i = 0; i < _dim_pop; ++i) {
-            file << " Individue " << i << ": ";
-            pop(i, 0).print_idxs(file);
-            file << "Loss: " << pop(i, 0).get_indi_Loss() << " ";
-            pop(i,0).print_positions(file);
-            file << endl;
+            cout << " Individue " << i << ": ";
+            pop[i].print_idxs();
+            cout << "Loss: " << pop[i].get_indi_Loss() << " ";
+            cout << endl;
         }
-    } */
+    }
+    
     // Sort the population based on the loss
     void sort(){ 
         arma::field<Individue> new_pop;
@@ -404,11 +396,11 @@ public:
         // Sort the population based on the loss
         std::vector<std::pair<double, size_t>> loss_indices;
         for (size_t i = 0; i < pop.n_elem; ++i) {
-            loss_indices.push_back(std::make_pair(pop(i, 0).get_indi_Loss(), i));
+            loss_indices.push_back(std::make_pair(pop[i].get_indi_Loss(), i));
         }
         std::sort(loss_indices.begin(), loss_indices.end());
         for(int i=0;i<_dim_pop;i++){
-            new_pop(i,0) = pop(loss_indices[i].second,0);
+            new_pop[i] = pop[loss_indices[i].second];
         }
         pop=new_pop;
     }
@@ -422,13 +414,9 @@ public:
         }
     }
 
-    // Destructor
-    ~Population() {}
-
     // ----------------------------------------------------- //
     //                  MUTATION METHODS                     //
     // ----------------------------------------------------- //
-
     //Crossover
     std::pair<ivec ,ivec> crossover(ivec mother_idxs,ivec father_idxs, double rand){
         
@@ -464,7 +452,7 @@ public:
         arma::field<Individue> new_pop;
         new_pop.set_size(_dim_pop);
         for(int i=0;i<_dim_pop;i++){
-            _sel=static_cast<int>((double)_dim_pop * (pow(_rnd->Rannyu(), 10)));
+            _sel=static_cast<int>((double)_dim_pop * (pow(_rnd->Rannyu(), 8)));
             new_pop[i] = pop[_sel];
         }
         // Replace the old population with the new one
@@ -473,69 +461,69 @@ public:
     }
     // Mutation of the population
     void Mutation(double rnd_cross,double rnd_pair,double rnd_shift,double rnd_blkperm,double rnd_inv){
+        
+        // variables declaration
         int m,n,k;
         double rand_cross,rand_mut;
         int index2=0;
         Individue sindi;
         std::pair<ivec,ivec> new_indi_idxs;
-        // Perform crossover with a probability
+        
         for(int index1=0;index1<_dim_pop;index1++){
-            rand_cross=_rnd->Rannyu();
+            
+            // update indexes and individue
             index2=index1;
             sindi=pop[index1];
+            
+            // Crossover
+            rand_cross=_rnd->Rannyu();
             if(rand_cross<rnd_cross){
-                //cerr << "crossover" << endl;
-                //non far fare crossover tra due individui uguali
+                // Do not allow crossover between the same individue
                 while(arma::approx_equal(pop[index1].get_idxs(), pop[index2].get_idxs(), "absdiff", 1e-10)){index2=(int)_rnd->Rannyu(0,_dim_pop);}
                 double rand=_rnd->Rannyu();
-                //cerr << "rand: " << rand << endl;
-                //cerr << "old indi:"<< endl;
-                //pop(index1,0).printIdxs();
-                //pop(index2,0).printIdxs();
-
                 new_indi_idxs=crossover(pop[index1].get_idxs(),pop[index2].get_idxs(),rand);
-                //cerr << "new indi:"<< endl;
-                //new_indi.first.printIdxs();
-                //new_indi.second.printIdxs();
                 if(_rnd->Rannyu()<0.5){sindi.set_idxs(new_indi_idxs.first);}else{sindi.set_idxs(new_indi_idxs.second);}
             }
-            // Perform mutation with a probability
+            
+            // PERFORM MUTATION WITH PROBABILITY rnd_mut
+
+            //Pair permutation
             rand_mut=_rnd->Rannyu();
             if(rand_mut<rnd_pair){
-                //cerr << "pair permutation" << endl;
                 sindi.pair_permutation((int)_rnd->Rannyu(0,_dim_indi-1),(int)_rnd->Rannyu(0,_dim_indi-1));
-                }
+            }
+            //Block shift
             rand_mut=_rnd->Rannyu();
             if(rand_mut<rnd_shift){
-                //cerr << "block shift" << endl;
                 k=(int)_rnd->Rannyu(0,_dim_indi-1);
                 m=(int)_rnd->Rannyu(1,_dim_indi-1);
                 n=(int)_rnd->Rannyu(1,_dim_indi-1-m);
                 if(_rnd->Rannyu()<0.5){sindi.block_shift(k,m,n);}else{sindi.block_shift(k,n,m);}
-                }
+            }
+            //Block permutation
             rand_mut=_rnd->Rannyu();
             if(rand_mut<rnd_blkperm){
-                //cerr << "block permutation" << endl;
                 m=(int)_rnd->Rannyu(0,(int)(_dim_indi)/2);
                 k=(int)_rnd->Rannyu(0,_dim_indi-1-m);
                 n=(int)_rnd->Rannyu(k+m+1,_dim_indi+k-m-1);
                 sindi.block_permutation(m,k,n);
-                }
+            }
+            //Inversion
             rand_mut=_rnd->Rannyu();
-            if(rand_mut<rnd_inv){       
-                //cerr << "inversion" << endl;         
+            if(rand_mut<rnd_inv){               
                 m=(int)_rnd->Rannyu(0,_dim_indi-1);
                 k=(int)_rnd->Rannyu(0,_dim_indi-1);
                 sindi.inversion(k,m);
-                }
-            pop(index1,0)=sindi;
             }
+            pop[index1]=sindi;
         }
+    }
 
-
+    // Destructor
+    ~Population() {}
 private:
     arma::field<Individue>  pop;
     int _dim_indi, _dim_pop, _sel; Random *_rnd;
 };
 
-#endif // POPULATION_H
+#endif // POPULATION_H 
