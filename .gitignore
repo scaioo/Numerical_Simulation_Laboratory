@@ -1,7 +1,9 @@
-# Ignora tutti i file eseguibili
-*.exe
-*.out
-*.bin
-
-# Ignora tutti i file .sh
+# Ignore all nobook checkpoints
+.ipynb_checkpoints
+# Ignore all files .sh
 *.sh
+# Ignore results lecture 5
+lecture_5/Results/RW_excited_*.dat
+lecture_5/Results/RW_ground_*.dat
+lecture_5/Results/ex_05.1_excited_*.dat
+lecture_5/Results/ex_05.1_ground_*.dat
