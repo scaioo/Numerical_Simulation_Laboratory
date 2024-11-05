@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <armadillo>
+#include <unordered_set>
 #include "../random_number/random.h"
 using namespace std;
 using namespace arma;
@@ -53,5 +54,8 @@ vector<string> StringVec(double start, double end, double increment);
 /**/
 int pbc(int position, int size);
 /**/
-
+arma::mat get_coordinates( std::string filename);
+/**/
+void fillVector( ivec& son, const ivec& parent);
+/**/
 #endif // FUNCTION_H

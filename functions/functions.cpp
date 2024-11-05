@@ -107,9 +107,9 @@ vec discrete_walk(Random &rnd,const vec &p, const double a){
 vec continuous_walk(Random &rnd, const vec &p, const double a){
     vec p_new=p;
     // uniform distribution around a sphere
-    auto angles=rnd.spherical(rnd);
-    double theta=angles.first;
-    double phi=angles.second;
+    vec angles=rnd.spherical();
+    double theta=angles[0];
+    double phi=angles[1];
     p_new[0]+=a*sin(theta)*cos(phi);
     p_new[1]+=a*sin(theta)*sin(phi);
     p_new[2]+=a*cos(theta);
@@ -322,4 +322,61 @@ vector<string> StringVec(double start, double end, double increment) {
 int pbc(int position, int size){
     // periodic boundary conditions
     return position - size * (int)floor((double)position/(double)size);
+}
+
+arma::mat get_coordinates(std::string filename) {
+    arma::mat coordinates;
+    // Open input file
+    std::ifstream infile(filename);
+    // verify that the file was opened correctly
+    if (!infile.is_open()) {
+        std::cerr << "Error: unable to open the file " << filename << std::endl;
+        exit(-1);
+    }
+    // count the number of lines in the file
+    int n = 0;
+    std::string line;
+    while (std::getline(infile, line)) {
+        n++;
+    }
+    // reset the file to the beginning
+    infile.clear();
+    infile.seekg(0, std::ios::beg);
+    // create a matrix to store the coordinates
+    coordinates.set_size(n, 2);
+    // read the coordinates from the file
+    int i = 0;
+    while (std::getline(infile, line)) {
+        std::stringstream ss(line);
+        double x, y;
+        // read the coordinates
+        if (ss >> x >> y) {
+            coordinates(i, 0) = x;
+            coordinates(i, 1) = y;
+            i++;
+        } else {
+            std::cerr << "Error: bad row in the file: " << line << std::endl;
+            exit(-1);
+        }
+    }
+    // close the file
+    infile.close();
+    return coordinates;
+}
+
+void fillVector( ivec& son, const ivec& parent) {
+    std::unordered_set<double> existingValues(son.begin(), son.end());
+    size_t fillIndex = 1;
+    for (size_t i=0;i < parent.size();i++) {
+        int value = parent[i];
+        if (existingValues.find(value) == existingValues.end()) {
+            while (fillIndex < son.size() && son[fillIndex] != 0) {
+                fillIndex++;
+            }
+            if (fillIndex < son.size()) {
+                son[fillIndex] = value;
+                existingValues.insert(value);
+            }
+        }
+    }
 }
